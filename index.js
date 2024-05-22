@@ -1,88 +1,109 @@
-
 const myModal = new bootstrap.Modal("#register-modal");
+let logged = sessionStorage.getItem('logged');
+const session = localStorage.getItem('session');
 
-document.getElementById("login-form").addEventListener("submit", function(e) {
+checkLogged()
+
+document.getElementById('login-form').addEventListener('submit', function (e) {
     e.preventDefault();
-    const email = document.getElementById("email-input").value;
-    const password = document.getElementById("password-input").value;
-    const session = document.getElementById("session-input").checked;
+
+    const email = document.querySelector('#input-email').value;
+    const password = document.querySelector('#input-password').value;
+    const checkSession = document.querySelector('#session-check').checked;
+
     const account = getAccount(email);
 
     if (!account) {
-        alert("Usuário não encontrado");
+        alert('Ops! Verifique seu usuário ou a senha.');
         return;
     }
 
-    if (account.password !== password) {
-        alert("Algo de errado não está certo, champs");
-        return;
+    if (account) {
+        if (account.password != password) {
+            alert('Ops! Verifique seu usuário ou a senha.');
+            return;
+        }
+
+        saveSession(email,checkSession);
+
+        window.location.href = 'home.html';
     }
+})
 
-    saveSession(email, session);
-
-    window.location.href = "home.html";
-});
-
-document.getElementById("create-form").addEventListener("submit", function(e) {
+document.getElementById('create-form').addEventListener('submit', function (e) {
     e.preventDefault();
-    const email = document.getElementById("email-create-input").value;
-    const password = document.getElementById("password-create-input").value;
-    const confirmPassword = document.getElementById("confirm-password-input").value;
+
+    const email = document.querySelector('#create-email-input').value;
+    const password = document.querySelector('#create-password-input').value;
+    const confirmPassword = document.querySelector('#confirm-password-input').value;
 
     if (email.length < 5) {
-        alert("Digite um email válido.");
+        alert('Preencha o campo com um email válido.');
         return;
     }
 
-    if (password.length < 3) {
-        alert("Preencha a senha com no mínimo 4 dígitos.");
+    if (password.length < 4) {
+        alert('Crie um senha com no mínimo 4 dígitos!');
         return;
     }
 
     if (password !== confirmPassword) {
-        alert("As senhas não coincidem.");
+        alert('A confirmação de senha não foi possível, tente novamente');
         return;
     }
 
     saveAccount({
-        login: email,
+        email: email,
         password: password,
         transactions: []
-    });
+    })
 
+    alert('Sua conta foi criada com sucesso.');
     myModal.hide();
 
-    alert("Conta criada com sucesso!");
 });
+
+function checkLogged() {
+    if (session) {
+        sessionStorage.setItem('logged', session);
+        logged = session;
+    }
+
+    if (logged)  {
+        saveSession(logged, session);
+
+        window.location.href = 'home.html';
+    }
+}
+
+function saveAccount(user) {
+    localStorage.setItem(user.email, JSON.stringify(user));
+}
 
 function saveSession(data, saveSession) {
     if (saveSession) {
-        localStorage.setItem("session", data);
+        localStorage.setItem('session', data);
     }
-    sessionStorage.setItem("logged", data);
-}
 
-function saveAccount(data) {
-    localStorage.setItem(data.login, JSON.stringify(data));
+    sessionStorage.setItem('logged', data);
 }
 
 function getAccount(key) {
     const account = localStorage.getItem(key);
-    return account ? JSON.parse(account) : null;
-}
 
-function checkLogged() {
-    const session = localStorage.getItem("session");
-    const logged = sessionStorage.getItem("logged");
-
-    if (session) {
-        sessionStorage.setItem("logged", session);
+    if (account) {
+        return JSON.parse(account);
     }
 
-    if (logged) {
-        saveSession(logged, true);
-        window.location.href = "home.html";
-    }
+    return '';
 }
 
-checkLogged();
+document.getElementById('create-form').addEventListener('submit', function(event) {
+    var password = document.getElementById('create-password-input').value;
+    var confirmPassword = document.getElementById('confirm-password-input').value;
+    
+    if (password !== confirmPassword) {
+        event.preventDefault(); // Impede o envio do formulário
+        alert('As senhas não correspondem. Por favor, tente novamente.');
+    }
+});
